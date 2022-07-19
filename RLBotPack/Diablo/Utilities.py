@@ -3,7 +3,7 @@ import time
 #import States
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlutilities.linear_algebra import *
-from rlutilities.mechanics import Aerial, AerialTurn, Dodge, Wavedash, Boostdash
+from rlutilities.mechanics import Aerial, Dodge, Wavedash, Boostdash, Reorient as AerialTurn
 from rlutilities.simulation import Game, Ball, Car
 import cProfile, pstats, io
 
@@ -2123,7 +2123,7 @@ def aerialWorkHorse(agent,struct):
     aerial = agent.aerial
     a_turn = agent.a_turn
 
-    targetVec = Vector([aerial.target[0],aerial.target[1],aerial.target[2]])
+    targetVec = Vector([aerial.target_position[0],aerial.target_position[1],aerial.target_position[2]])
     #print(aerial.target.x)
 
     if agent.onSurface and not agent.onWall:
@@ -2164,9 +2164,9 @@ def aerialSelection(agent, struct):
     enemyGoal = Vector([0, 5120 * -sign(agent.team), 200])
 
     if agent.aerial == None:
-        agent.aerial = Aerial(agent.game.my_car)
+        agent.aerial = Aerial(agent.game.cars[agent.index])
     if agent.a_turn == None:
-        agent.a_turn = AerialTurn(agent.game.my_car)
+        agent.a_turn = AerialTurn(agent.game.cars[agent.index])
 
     aerial = agent.aerial
     a_turn = agent.a_turn
@@ -2216,10 +2216,10 @@ def aerialSelection(agent, struct):
 
         targetVec.data[2]-=beneathAmount
 
-        aerial.target = vec3(targetVec[0], targetVec[1], targetVec[2])
+        aerial.target_position = vec3(targetVec[0], targetVec[1], targetVec[2])
 
         simulation = aerial.simulate()
-        if norm(simulation.location - aerial.target) < 50:
+        if norm(simulation.position - aerial.target_position) < 50:
             return True
 
     return False

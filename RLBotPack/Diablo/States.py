@@ -6,7 +6,7 @@ from rlbot.utils.structures.game_data_struct import GameTickPacket
 from rlbot.utils.game_state_util import GameState, BallState, CarState, Physics, Vector3, Rotator
 
 from rlutilities.linear_algebra import *
-from rlutilities.mechanics import Aerial, AerialTurn, Dodge, Wavedash, Boostdash, Drive
+from rlutilities.mechanics import Aerial, Dodge, Wavedash, Boostdash, Drive, Reorient as AerialTurn
 from rlutilities.simulation import Game, Ball, Car
 
 
@@ -103,7 +103,7 @@ class AerialHandler():
 class WaveDashing(baseState):
     def __init__(self,agent,targVec):
         baseState.__init__(self,agent)
-        self.action = Wavedash(agent.game.my_car)
+        self.action = Wavedash(agent.game.cars[agent.index])
         self.action.direction = vec2(targVec[0],targVec[1])
 
     def update(self):

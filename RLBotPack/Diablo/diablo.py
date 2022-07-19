@@ -1,14 +1,16 @@
 import os
 import time
 import math
+from traceback import print_exc
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 from rlbot.utils.game_state_util import GameState, BallState, CarState, Physics, Vector3 as vector3, Rotator
 try:
     from rlutilities.linear_algebra import *
-    from rlutilities.mechanics import Aerial, AerialTurn, Dodge, Wavedash, Boostdash
+    from rlutilities.mechanics import Aerial, Dodge, Wavedash, Boostdash, Reorient as AerialTurn
     from rlutilities.simulation import Game, Ball, Car
 except:
+    print_exc()
     print("==========================================")
     print("\nrlutilities import failed.")
     print("Make sure rlutilities folder is local to Diablo bot's files. Running the setup.py file should download the module for you.")
@@ -43,7 +45,7 @@ def profile(fnc):
 class diabloBot(BaseAgent):
     def __init__(self, name, team, index):
         Game.set_mode("soccar")
-        self.game = Game(index, team)
+        self.game = Game()
         self.time = 0
         self.index = index
         self.name = name
@@ -88,8 +90,8 @@ class diabloBot(BaseAgent):
         self.carHeight = 36.159
         self.openGoal = False
         self.maxDT = 1/120
-        self.aerial = None #Aerial(agent.game.my_car)
-        self.a_turn = None #AerialTurn(agent.game.my_car)
+        self.aerial = None #Aerial(agent.game.cars[agent.index])
+        self.a_turn = None #AerialTurn(agent.game.cars[agent.index])
 
     def getActiveState(self):
         if type(self.activeState) == JumpingState:
@@ -164,9 +166,8 @@ class diabloBot(BaseAgent):
     def preprocess(self, game):
         self.ballPred = self.get_ball_prediction_struct()
         self.players = [self.index]
-        self.game.read_game_information(game,
-                                        self.get_rigid_body_tick(),
-                                        self.get_field_info())
+        self.game.read_field_info(self.get_field_info())
+        self.game.read_packet(game)
         car = game.game_cars[self.index]
         self.me.location = Vector([car.physics.location.x, car.physics.location.y, car.physics.location.z])
         self.me.velocity = Vector([car.physics.velocity.x, car.physics.velocity.y, car.physics.velocity.z])
